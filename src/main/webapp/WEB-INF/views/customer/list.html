@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<a href="/create-customer">Create new product</a>
+<h1 class="title">Products List</h1>
+<div>
+    <div th:each="customer,iterStat : ${customers}" th:class="${iterStat.odd}? 'odd'">
+        <div class="product-item">
+            <img width="150px" height="150px" th:src="@{'/i/' + ${customer.image}}">
+            <p th:text="${customer.firstName}"></p>
+            <p th:text="${customer.lastName}"></p>
+            <p><a th:href="@{/edit-customer/__${customer.id}__}">Edit</a></p>
+            <p><a th:href="@{/delete-customer/__${customer.id}__}">Delete</a></p>
+            <p><a th:href="@{/view-customer/__${customer.id}__}">View</a></p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
