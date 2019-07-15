@@ -11,23 +11,22 @@ public class Customer {
     private Long id;
     private String firstName;
     private String lastName;
-    private String image;
+
+    @ManyToOne
+    @JoinColumn(name = "province_id")
+    private Province province;
 
     public Customer() {}
 
-    public Customer(String firstName, String lastName, String image) {
+    public Customer(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.image = image;
     }
 
-    public Customer(Long id, String firstName, String lastName, String image) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.image = image;
-        this.id = id;
+    @Override
+    public String toString() {
+        return String.format("Customer[id=%d, firstName='%s', lastName='%s']", id, firstName, lastName);
     }
-
 
     public Long getId() {
         return id;
@@ -49,15 +48,15 @@ public class Customer {
         return lastName;
     }
 
+    public Province getProvince() {
+        return province;
+    }
+
+    public void setProvince(Province province) {
+        this.province = province;
+    }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
     }
 }

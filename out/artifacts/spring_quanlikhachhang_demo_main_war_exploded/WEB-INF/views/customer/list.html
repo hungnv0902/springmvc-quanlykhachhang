@@ -5,20 +5,33 @@
     <title>Title</title>
 </head>
 <body>
-<a href="/create-customer">Create new product</a>
-<h1 class="title">Products List</h1>
-<div>
-    <div th:each="customer,iterStat : ${customers}" th:class="${iterStat.odd}? 'odd'">
-        <div class="product-item">
-            <img width="150px" height="150px" th:src="@{'/i/' + ${customer.image}}">
-            <p th:text="${customer.firstName}"></p>
-            <p th:text="${customer.lastName}"></p>
-            <p><a th:href="@{/edit-customer/__${customer.id}__}">Edit</a></p>
-            <p><a th:href="@{/delete-customer/__${customer.id}__}">Delete</a></p>
-            <p><a th:href="@{/view-customer/__${customer.id}__}">View</a></p>
-        </div>
-    </div>
-</div>
 
+<a href="/create-customer">Create new customer</a>
+<h1>Customers</h1>
+<form>
+    Search by first name:
+    <input name="s" type="text"/>
+    <input type="submit" value="Search"/>
+</form><br/>
+<table border="1">
+    <tr>
+        <th>First name</th>
+        <th>Last name</th>
+    </tr>
+    <th:block th:each="customer : ${customers}">
+        <tr>
+            <td th:text="${customer.firstName}"></td>
+            <td th:text="${customer.lastName}"></td>
+            <td th:text="${customer.province.name}"></td>
+            <td><a th:href="@{/edit-customer/__${customer.id}__ }">Edit</a></td>
+            <td><a th:href="@{/delete-customer/__${customer.id}__ }">Delete</a></td>
+        </tr>
+    </th:block>
+</table>
+<div>
+    <a th:href="@{'/customers'(page=${customers.number - 1})}" th:if="${customers.hasPrevious()}">Previous</a>
+    <span th:text="${customers.number + 1}"></span>/<span th:text="${customers.totalPages}"></span>
+    <a th:href="@{'/customers'(page=${customers.number + 1})}" th:if="${customers.hasNext()}">Next</a>
+</div>
 </body>
 </html>

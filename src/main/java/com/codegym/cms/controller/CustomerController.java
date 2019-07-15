@@ -1,127 +1,104 @@
 package com.codegym.cms.controller;
 
 import com.codegym.cms.model.Customer;
-import com.codegym.cms.model.CustomerForm;
+import com.codegym.cms.model.Province;
 import com.codegym.cms.service.CustomerService;
+import com.codegym.cms.service.ProvinceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class CustomerController {
-    @Autowired
-    Environment env;
+
 
     @Autowired
     private CustomerService customerService;
 
-    @GetMapping("/create-customer")
-    public ModelAndView showCreateForm() {
-        ModelAndView modelAndView = new ModelAndView("/customer/create");
-        modelAndView.addObject("customer", new Customer());
-        return modelAndView;
+    @Autowired
+    private ProvinceService provinceService;
+
+    @ModelAttribute("provinces")
+    public Iterable<Province> provinces(){
+        return provinceService.findAll();
     }
 
-    @RequestMapping(value = "/create-customer", method = RequestMethod.POST)
-    public ModelAndView saveProduct(@ModelAttribute("customerForm") CustomerForm customerForm, BindingResult result, HttpServletRequest servletRequest) {
-
-        // thong bao neu xay ra loi
-        if (result.hasErrors()) {
-            System.out.println("Result Error Occured" + result.getAllErrors());
+        @GetMapping("/create-customer")
+        public ModelAndView showCreateForm(){
+            ModelAndView modelAndView = new ModelAndView("/customer/create");
+            modelAndView.addObject("customer", new Customer());
+            return modelAndView;
         }
 
-        // lay ten file
-        MultipartFile multipartFile = customerForm.getImage();
-        String fileName = multipartFile.getOriginalFilename();
-        String fileUpload = env.getProperty("file_upload").toString();
+        @PostMapping("/create-customer")
+        public ModelAndView saveCustomer(@ModelAttribute("customer") Customer customer){
+            customerService.save(customer);
 
-        // luu file len server
-        try {
-            //multipartFile.transferTo(imageFile);
-            FileCopyUtils.copy(customerForm.getImage().getBytes(), new File(fileUpload + fileName));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+            ModelAndView modelAndView = new ModelAndView("/customer/create");
+            modelAndView.addObject("customer", new Customer());
+            modelAndView.addObject("message", "New customer created successfully");
+            return modelAndView;
         }
-        // tham khảo: https://github.com/codegym-vn/spring-static-resources
-
-        // tao doi tuong de luu vao db
-        Customer productObject = new Customer(customerForm.getFirstName(), fileName, customerForm.getLastName());
-
-        // luu vao db
-        customerService.save(productObject);
-
-
-        ModelAndView modelAndView = new ModelAndView("/customer/create");
-        modelAndView.addObject("product", new CustomerForm());
-        modelAndView.addObject("message", "New product created successfully");
-        return modelAndView;
-    }
 
     @GetMapping("/customers")
-    public ModelAndView listCustomers() {
-        List<Customer> customers = customerService.findAll();
+    public ModelAndView listCustomers(@RequestParam("s") Optional<String> s, Pageable pageable){
+        Page<Customer> customers;
+        if(s.isPresent()){
+            customers = customerService.findAllByFirstNameContaining(s.get(), pageable);
+        } else {
+            customers = customerService.findAll(pageable);
+        }
         ModelAndView modelAndView = new ModelAndView("/customer/list");
         modelAndView.addObject("customers", customers);
         return modelAndView;
     }
 
     @GetMapping("/edit-customer/{id}")
-    public ModelAndView showEditForm(@PathVariable Long id) {
+    public ModelAndView showEditForm(@PathVariable Long id){
         Customer customer = customerService.findById(id);
-        if (customer != null) {
-            CustomerForm customerForm = new CustomerForm(customer.getId(), null, customer.getFirstName(), customer.getLastName());
-            ModelAndView mv = new ModelAndView("/customer/edit");
-            mv.addObject("customerform", customerForm);
-            mv.addObject("customer", customer);
-            return mv;
-        } else {
-            ModelAndView mv = new ModelAndView("/customer/error");
-            return mv;
+        if(customer != null) {
+            ModelAndView modelAndView = new ModelAndView("/customer/edit");
+            modelAndView.addObject("customer", customer);
+            return modelAndView;
+
+        }else {
+            ModelAndView modelAndView = new ModelAndView("customer/error");
+            return modelAndView;
         }
     }
 
     @PostMapping("/edit-customer")
-
-    public ModelAndView editProduct(@ModelAttribute("customerform") CustomerForm customerForm, BindingResult result) {
-
-        // thong bao neu xay ra loi
-        if (result.hasErrors()) {
-            System.out.println("Result Error Occured" + result.getAllErrors());
-        }
-
-        // lay ten file
-        MultipartFile multipartFile = customerForm.getImage();
-        String fileName = multipartFile.getOriginalFilename();
-
-
-        // luu file len server
-        try {
-            FileCopyUtils.copy(customerForm.getImage().getBytes(), new File(env.getProperty("file_upload") + fileName));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        // tao doi tuong de luu vao db
-        Customer productObject = new Customer(customerForm.getId(), customerForm.getFirstName(), customerForm.getLastName(), null);
-
-        // luu vao db
-        customerService.save(productObject);
-
-
+    public ModelAndView updateCustomer(@ModelAttribute("customer") Customer customer){
+        customerService.save(customer);
         ModelAndView modelAndView = new ModelAndView("/customer/edit");
-        modelAndView.addObject("customer", new CustomerForm());
-        modelAndView.addObject("message", "Product edited successfully");
+        modelAndView.addObject("customer", customer);
+        modelAndView.addObject("message", "Customer updated successfully");
         return modelAndView;
+    }
+
+    @GetMapping("/delete-customer/{id}")
+    public ModelAndView showDeleteForm(@PathVariable Long id){
+        Customer customer = customerService.findById(id);
+        if(customer != null) {
+            ModelAndView modelAndView = new ModelAndView("/customer/delete");
+            modelAndView.addObject("customer", customer);
+            return modelAndView;
+
+        }else {
+            ModelAndView modelAndView = new ModelAndView("customer/error");
+            return modelAndView;
+        }
+    }
+
+    @PostMapping("/delete-customer")
+    public String deleteCustomer(@ModelAttribute("customer") Customer customer){
+        customerService.remove(customer.getId());
+        return "redirect:customers";
     }
 }
 

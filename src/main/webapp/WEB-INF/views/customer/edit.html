@@ -2,37 +2,30 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Edit product</title>
+    <title>Edit customer</title>
 </head>
 <body>
-<h1>Edit product</h1>
+<h1>Edit customer</h1>
 <p>
     <a href="/customers">Customer list</a>
 </p>
 <th:block th:if="${message}">
     <p th:text="${message}"></p>
 </th:block>
-<form th:action="@{/edit-customer}" th:object="${customerform}" method="post" enctype="multipart/form-data">
+<form th:action="@{/edit-customer}" th:object="${customer}" method="post">
     <input th:type="hidden" name="id" th:field="*{id}">
     <table>
         <tr>
-            <td>Image:</td>
-            <td>
-                <img width="150px" height="150px" th:src="@{'/images/' + ${customer.image}}">
-                <input type="file" th:field="*{image}"/>
-            </td>
-        </tr>
-        <tr>
-            <td>Name:</td>
+            <td>First name:</td>
             <td><input type="text" th:field="*{firstName}"/></td>
         </tr>
         <tr>
-            <td>Price:</td>
+            <td>Last name:</td>
             <td><input type="text" th:field="*{lastName}"/></td>
         </tr>
         <tr>
             <td></td>
-            <td><input type="submit" value="Edit Product"></td>
+            <td><input type="submit" value="Update customer"></td>
         </tr>
     </table>
 </form>
